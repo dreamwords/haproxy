@@ -65,7 +65,7 @@ default['haproxy']['member_max_connections'] = 100
 default['haproxy']['frontend_max_connections'] = 2000
 default['haproxy']['frontend_ssl_max_connections'] = 2000
 
-default['haproxy']['install_method'] = 'package'
+default['haproxy']['install_method'] = 'source'
 default['haproxy']['conf_dir'] = '/etc/haproxy'
 
 default['haproxy']['source']['version'] = '1.4.22'
