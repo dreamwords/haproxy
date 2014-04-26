@@ -47,7 +47,7 @@ default['haproxy']['ssl_httpchk'] = nil
 default['haproxy']['enable_admin'] = true
 default['haproxy']['admin']['address_bind'] = "127.0.0.1"
 default['haproxy']['admin']['port'] = 22002
-default['haproxy']['enable_stats_socket'] = false
+default['haproxy']['enable_stats_socket'] = true
 default['haproxy']['stats_socket_path'] = "/var/run/haproxy.sock"
 default['haproxy']['stats_socket_user'] = node['haproxy']['user']
 default['haproxy']['stats_socket_group'] = node['haproxy']['group']
@@ -76,7 +76,7 @@ default['haproxy']['source']['target_os'] = 'generic'
 default['haproxy']['source']['target_cpu'] = ''
 default['haproxy']['source']['target_arch'] = ''
 default['haproxy']['source']['use_pcre'] = false
-default['haproxy']['source']['use_openssl'] = false
+default['haproxy']['source']['use_openssl'] = true
 default['haproxy']['source']['use_zlib'] = false
 
 default['haproxy']['listeners'] = {
@@ -84,3 +84,6 @@ default['haproxy']['listeners'] = {
   'frontend' => {},
   'backend' => {}
 }
+
+default["haproxy"]["stats_url"] = '/haproxy?stats'
+default["haproxy"]["stats_user"] = 'opsworks'

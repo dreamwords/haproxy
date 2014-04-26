@@ -22,16 +22,32 @@ defaults
   option <%= option %>
 <% end -%>
   balance  <%= node['haproxy']['balance_algorithm'] %>
+  stats auth <%= node["haproxy"]["stats_user"] %>:<%= node["haproxy"]["stats_password"] %>
+  stats uri <%= node["haproxy"]["stats_url"] %>
+
 
 # Set up application listeners here.
 
-<% node['haproxy']['listeners'].each do |type, listeners | %>
-<% listeners.each do |name, listen| %>
-<%= type %> <%= name %>
-<% listen.each do |option| %>
-  <%= option %>
-<% end %>
+frontend https-in
+    bind :443 ssl crt /etc/ssl/certs/STAR_thefrontlog_com.pem
+    timeout client 86400000
+    default_backend www_backend
+    acl is_websocket hdr(Upgrade) -i WebSocket
+    acl is_websocket hdr_beg(Host) -i ws
 
-<% end %>
+    use_backend socket_backend if is_websocket
 
-<% end %>
+backend www_backend
+    balance roundrobin
+    option forwardfor # This sets X-Forwarded-For
+    timeout server 30000
+    timeout connect 4000
+    server apiserver 184.72.85.114:4984 weight 1 maxconn 1024 check
+
+backend socket_backend
+    balance roundrobin
+    option forwardfor # This sets X-Forwarded-For
+    timeout queue 5000
+    timeout server 86400000
+    timeout connect 86400000
+    server apiserver 184.72.85.114:4984 weight 1 maxconn 1024 check
