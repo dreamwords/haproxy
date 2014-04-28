@@ -87,3 +87,4 @@ default['haproxy']['listeners'] = {
 
 default["haproxy"]["stats_url"] = '/haproxy?stats'
 default["haproxy"]["stats_user"] = 'opsworks'
+# default["haproxy"]["stats_password"] = '' # set password in Customer Json

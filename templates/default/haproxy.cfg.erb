@@ -1,4 +1,4 @@
-global
+websocket_backendglobal
   log 127.0.0.1   local0
   log 127.0.0.1   local1 notice
   #log loghost    local0 info
@@ -28,26 +28,41 @@ defaults
 
 # Set up application listeners here.
 
-frontend https-in
-    bind :443 ssl crt /etc/ssl/certs/STAR_thefrontlog_com.pem
-    timeout client 86400000
+frontend frontend
+	# HTTP
+  	bind :80
+  	# Redirect all HTTP traffic to HTTPS
+  	redirect scheme https if !{ ssl_fc }
+	
+	# HTTPS
+    bind :443 ssl crt <%= node['haproxy']['ssl_cert'] %>
+	
+	use_backend websocket_backend if { hdr(Upgrade) -i WebSocket }
     default_backend www_backend
-    acl is_websocket hdr(Upgrade) -i WebSocket
-    acl is_websocket hdr_beg(Host) -i ws
-
-    use_backend socket_backend if is_websocket
 
 backend www_backend
+	# Tell the backend that this is a secure connection,
+	# even though it's getting plain HTTP.
+  	reqadd X-Forwarded-Proto:\ https
+	
     balance roundrobin
     option forwardfor # This sets X-Forwarded-For
     timeout server 30000
     timeout connect 4000
-    server apiserver 184.72.85.114:4984 weight 1 maxconn 1024 check
+<% node["haproxy"]["backend_servers"].each do | backend_server | -%>
+  server backend_server <%= backend_server %> weight 1 maxconn 1024 check
+<% end -%>	    
 
-backend socket_backend
+backend websocket_backend
+	# Tell the backend that this is a secure connection,
+	# even though it's getting plain HTTP.
+  	reqadd X-Forwarded-Proto:\ https
+
     balance roundrobin
     option forwardfor # This sets X-Forwarded-For
     timeout queue 5000
     timeout server 86400000
     timeout connect 86400000
-    server apiserver 184.72.85.114:4984 weight 1 maxconn 1024 check
+<% node["haproxy"]["backend_servers"].each do | backend_server | -%>
+  server backend_server <%= backend_server %> weight 1 maxconn 1024 check
+<% end -%>	    
