@@ -58,6 +58,12 @@ default['haproxy']['x_forwarded_for'] = false
 default['haproxy']['defaults_timeouts']['connect'] = "5s"
 default['haproxy']['defaults_timeouts']['client'] = "50s"
 default['haproxy']['defaults_timeouts']['server'] = "50s"
+default['haproxy']['defaults_timeouts']['tunnel'] = "3600s"
+default['haproxy']['defaults_timeouts']['http-keep-alive'] = "1s"
+default['haproxy']['defaults_timeouts']['http-request'] = "15s"
+default['haproxy']['defaults_timeouts']['queue'] = "30s"
+default['haproxy']['defaults_timeouts']['tarpit'] = "60s"
+
 default['haproxy']['cookie'] = nil
 
 default['haproxy']['global_max_connections'] = 4096

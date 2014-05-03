@@ -29,40 +29,41 @@ defaults
 # Set up application listeners here.
 
 frontend frontend
-	# HTTP
-  	bind :80
-  	# Redirect all HTTP traffic to HTTPS
-  	redirect scheme https if !{ ssl_fc }
+  # HTTP
+  bind :80
+  # Redirect all HTTP traffic to HTTPS
+  redirect scheme https if !{ ssl_fc }
 	
-	# HTTPS
-    bind :443 ssl crt <%= node['haproxy']['ssl_cert'] %>
+  # HTTPS
+  bind :443 ssl crt <%= node['haproxy']['ssl_cert'] %>
 	
-	use_backend websocket_backend if { hdr(Upgrade) -i WebSocket }
-    default_backend www_backend
+  use_backend websocket_backend if { hdr(Upgrade) -i WebSocket }
+  default_backend www_backend
 
 backend www_backend
-	# Tell the backend that this is a secure connection,
-	# even though it's getting plain HTTP.
-  	reqadd X-Forwarded-Proto:\ https
-	
-    balance roundrobin
-    option forwardfor # This sets X-Forwarded-For
-    timeout server 30000
-    timeout connect 4000
-<% node["haproxy"]["backend_servers"].each do | backend_server | -%>
-	server backend_server <%= backend_server %> weight 1 maxconn 1024 check
+  # Tell the backend that this is a secure connection,
+  # even though it's getting plain HTTP.
+  reqadd X-Forwarded-Proto:\ https
+
+  balance roundrobin
+  option forwardfor # This sets X-Forwarded-For
+  timeout server 30000
+  timeout connect 4000
+<% node["haproxy"]["backend_servers"].each_with_index do | backend_server, i | -%>
+  server backend_server<%= i %> <%= backend_server %> weight 1 maxconn 1024 check
 <% end -%>	    
 
 backend websocket_backend
-	# Tell the backend that this is a secure connection,
-	# even though it's getting plain HTTP.
-  	reqadd X-Forwarded-Proto:\ https
+  # Tell the backend that this is a secure connection,
+  # even though it's getting plain HTTP.
+  reqadd X-Forwarded-Proto:\ https
 
-    balance roundrobin
-    option forwardfor # This sets X-Forwarded-For
-    timeout queue 5000
-    timeout server 86400000
-    timeout connect 86400000
-<% node["haproxy"]["backend_servers"].each do | backend_server | -%>
-server backend_server <%= backend_server %> weight 1 maxconn 1024 check
+  balance roundrobin
+  option forwardfor # This sets X-Forwarded-For
+  timeout queue 5000
+  timeout server 86400000
+  timeout connect 86400000
+  timeout tunnel 2h
+<% node["haproxy"]["backend_servers"].each_with_index do | backend_server, i | -%>
+  server backend_server<%= i %> <%= backend_server %> weight 1 maxconn 1024 check
 <% end -%>	    
